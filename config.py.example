@@ -1,0 +1,47 @@
+# -*- coding: utf-8 -*-
+
+token = '999999999:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'  # Telegram BOT token
+
+import unicodeEmoji as emo
+messageTemplate = f"""{{headMessage}}
+{emo.PHONECALL}{{extPhone}}
+{emo.MAN}{{extName}}
+{emo.ALARM_CLOCK}{{dateTime}}
+{{callHistory}}"""
+
+WEBHOOK_HOST = 'tg.example.pp.ua'
+WEBHOOK_PORT = 8443  # 443, 80, 88 or 8443
+WEBHOOK_LISTEN = '0.0.0.0'  
+
+WEBHOOK_SSL_CERT = './webhook_tg_example_pp_ua_cert.pem'  # Путь к сертификату
+WEBHOOK_SSL_PRIV = './webhook_tg_example_pp_ua_pkey.pem'  # Путь к приватному ключу
+WEBHOOK_SSL_CA = ''  # Путь к корневому сертификату который отдает LetsEncrypt. При самоподписанном сертификате здесь должно быть пусто!
+
+WEBHOOK_URL_BASE = "https://%s:%s" % (WEBHOOK_HOST, WEBHOOK_PORT)
+WEBHOOK_URL_PATH = "/%s/" % (token)
+
+# Настройки Asterisk AMI 
+AMIClientAddress = {
+    'address': '127.0.0.1',
+    'port': 5038,
+    'timeout': 3000,
+}
+
+AMIClientUser = {
+    'username': 'admin',
+    'secret': 'secretforadmin',
+}
+
+# Настройки MySQL CDR Asterisk
+CdrDB = {
+    'host': "127.0.0.1", 
+    'user': "mysqluser", 
+    'password': "mysqlpassword", 
+    'db': "asteriskcdrdb",
+}
+
+CallsDB = '/var/run/CallsBOT.db'
+logfile = '/var/log/missedCallsBot.log'
+
+### Gloal variables
+Users = '' # class Users
