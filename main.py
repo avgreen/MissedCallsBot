@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 import cherrypy
 import config
-import sys
-#import subprocess
+import sys, os, shutil
 import logging
 import argparse
 from ClinicaWeb import ClinicaWebAPI as cwAPI
@@ -13,14 +12,32 @@ import users
 
 try:
     import telebot
-#    from telebot import types
 except:
     print('You need to install pytelegrambotapi (pip install pytelegrambotapi) first!')
     exit()
 
-
 def main():
     config.Users = users.Users()
+    logger = logging.getLogger("bot")
+    logger.setLevel(logging.INFO)
+    # create the logging file handler
+    fh = logging.FileHandler(config.logfile)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    # add handler to logger object
+    logger.addHandler(fh)
+    shutil.chown(config.logfile, user=config.user, group=config.group)
+    # create databases and set permission for it 
+    if not os.path.exists(os.path.dirname(config.CallsDB)):
+        os.makedirs(os.path.dirname(config.CallsDB))
+        shutil.chown(os.path.dirname(config.CallsDB), user=config.user, group=config.group)
+    if not os.path.exists(config.CallsDB):
+        os.mknod(config.CallsDB)
+        shutil.chown(config.CallsDB, user=config.user, group=config.group)
+    if not os.path.exists(config.UsersDB):
+        os.mknod(config.UsersDB)
+        shutil.chown(config.UsersDB, user=config.user, group=config.group)
+
     if len(sys.argv) > 1:
         parser = argparse.ArgumentParser(add_help=True)
         parser.add_argument("-i", "--intPhone", help="internal phone number")
@@ -49,15 +66,6 @@ def main():
             'server.ssl_private_key': config.WEBHOOK_SSL_PRIV,
             'server.ssl_certificate_chain': config.WEBHOOK_SSL_CA,
         })
-
-        logger = logging.getLogger("bot")
-        logger.setLevel(logging.INFO)
-        # create the logging file handler
-        fh = logging.FileHandler(config.logfile)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        fh.setFormatter(formatter)
-        # add handler to logger object
-        logger.addHandler(fh)
         
         logger.info("Program started")    
         # Первое CherryPy приложение будет доступно по URL: "/".

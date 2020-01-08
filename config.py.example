@@ -40,8 +40,11 @@ CdrDB = {
     'db': "asteriskcdrdb",
 }
 
-CallsDB = '/var/run/CallsBOT.db'
+CallsDB = '/var/db/MissedCallsBot/IncomingCalls.db'
+UsersDB = '/var/db/MissedCallsBot/Users.db'
 logfile = '/var/log/missedCallsBot.log'
+user = 'asterisk'
+group = 'asterisk'
 
 ### Gloal variables
 Users = '' # class Users
