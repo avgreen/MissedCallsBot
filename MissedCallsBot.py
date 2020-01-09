@@ -141,7 +141,7 @@ def callback_inline(call):
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=call.message.text, reply_markup='{"inline_keyboard": [[{"text": "В процессе ... (%s)", "callback_data": "-CallTo"}]]}'%(Extension))
                 callAwait = CallWithAwait(Extension, phoneNumber)
                 if callAwait.callStatus:
-                    bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+                    iCalls.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
                     callAwait.logger.info('Success call to %s from EXT %s. Deleting from history' % (phoneNumber, Extension))
                 else: 
                     keyboard = types.InlineKeyboardMarkup()
