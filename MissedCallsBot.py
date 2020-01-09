@@ -119,14 +119,15 @@ def callback_inline(call):
     # Если сообщение из чата с ботом
     if call.message:
         Extension = config.Users.getExtension(call.from_user.id)
+        keyboard = types.InlineKeyboardMarkup()
         if Extension:
-            callbackData=list(filter(lambda button: button['text'] == 'Перезвонить', call.message.json['reply_markup']['inline_keyboard'][0]))[0]['callback_data']
             iCalls = IncomingCalls.IncomingCalls()
             if call.data == "DeleteYes":
+                callbackData=list(filter(lambda button: button['text'] == 'Перезвонить', call.message.json['reply_markup']['inline_keyboard'][0]))[0]['callback_data']
                 iCalls.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
                 logger.info("Delete message from %s by %s"%(callbackData[6::], Extension))
             elif call.data == "DeleteNo" or call.data == "Delete":
-                keyboard = types.InlineKeyboardMarkup()
+                callbackData=list(filter(lambda button: button['text'] == 'Перезвонить', call.message.json['reply_markup']['inline_keyboard'][0]))[0]['callback_data']
                 callback_button = types.InlineKeyboardButton(text="Перезвонить", callback_data=callbackData)
                 if call.data == "Delete":
                     deleteYes_button = types.InlineKeyboardButton(text="Таки удалить!", callback_data="DeleteYes")
@@ -138,13 +139,12 @@ def callback_inline(call):
                 bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=call.message.text, parse_mode='HTML', reply_markup = keyboard)
             elif call.data[:6:] == "CallTo":
                 phoneNumber = call.data[6::]
-                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=call.message.text, reply_markup='{"inline_keyboard": [[{"text": "В процессе ... (%s)", "callback_data": "-CallTo"}]]}'%(Extension))
+                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=call.message.text, reply_markup='{"inline_keyboard": [[{"text": "В процессе ... (%s)", "callback_data": "-CallTo%s"}]]}'%(Extension, phoneNumber))
                 callAwait = CallWithAwait(Extension, phoneNumber)
                 if callAwait.callStatus:
                     iCalls.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
                     callAwait.logger.info('Success call to %s from EXT %s. Deleting from history' % (phoneNumber, Extension))
                 else: 
-                    keyboard = types.InlineKeyboardMarkup()
                     callback_button = types.InlineKeyboardButton(text="Перезвонить", callback_data=call.data)
                     if callAwait.complited: # Если нет - значит звонок отбили еще на этапе Originate ну или Extension того кто нажал перезвон был в данный момент недоступен 
                         delete_button = types.InlineKeyboardButton(text="Удалить", callback_data="Delete")
@@ -153,8 +153,12 @@ def callback_inline(call):
                         keyboard.add(callback_button)
                     bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=getCallHistory(phoneNumber) if callAwait.complited else call.message.text, parse_mode='HTML', reply_markup = keyboard)
                 #logger.debug(call.message.json['reply_markup'])
+            elif call.data[:7:] == "-CallTo" and Extension == 213:
+                callback_button = types.InlineKeyboardButton(text="Перезвонить", callback_data=call.data[1::])
+                keyboard.add(callback_button)
+                bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=call.message.text, parse_mode='HTML', reply_markup = keyboard)
             else:
-                 logger.debug("call.data=%s"%call.data)
+                logger.debug("call.data=%s"%call.data)
         else:
             logger.info("Not found Ext for ID="+str(call.from_user.id))
     # Если сообщение из инлайн-режима

@@ -129,4 +129,8 @@ dmypy.json
 .pyre/
 
 # Certificates
-.pem
+*.pem
+ca_bundle.crt
+
+# config file with private data
+config.py
