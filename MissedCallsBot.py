@@ -121,8 +121,8 @@ def callback_inline(call):
         Extension = config.Users.getExtension(call.from_user.id)
         if Extension:
             callbackData=list(filter(lambda button: button['text'] == 'Перезвонить', call.message.json['reply_markup']['inline_keyboard'][0]))[0]['callback_data']
+            iCalls = IncomingCalls.IncomingCalls()
             if call.data == "DeleteYes":
-                iCalls = IncomingCalls.IncomingCalls()
                 iCalls.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
                 logger.info("Delete message from %s by %s"%(callbackData[6::], Extension))
             elif call.data == "DeleteNo" or call.data == "Delete":
