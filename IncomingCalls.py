@@ -61,11 +61,11 @@ class IncomingCalls(object):
             for row in self.cursor.fetchall():
                 self.delete_message(chat_id, message_id = row['msgID'], extPhone = extPhone)
         else:
-#            print("delete messge id = %s" % (message_id))
             self.cursor.execute("DELETE FROM calls WHERE chatID = ? and msgID = ?", (chat_id, message_id))
             try:
                 self.bot.delete_message(chat_id=chat_id, message_id=message_id)
-                self.logger.info("Delete message from %s by ChatID=%s and MsgID=%s" % (extPhone, chat_id, message_id))
+                if extPhone:
+                    self.logger.info("Delete message from %s by ChatID=%s and MsgID=%s" % (extPhone, chat_id, message_id))
             except:
                 self.logger.info("Can't delete message from %s by ChatID=%s and MsgID=%s" % (extPhone, chat_id, message_id))
             self.conn.commit()

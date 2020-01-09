@@ -30,8 +30,11 @@ def Originate(Extension, phoneNumber, CallerID = 'python', Context = 'from-inter
         CallerID=CallerID,
     )
     logger.info("Start originate from %s to %s" % (Extension, phoneNumber))
-#    if client.send_action(action).response.status == 'Success':
-#        logger.info("Start call from %s to %s" % (Extension, phoneNumber))
+    if client.send_action(action).response.status == 'Success':
+        logger.info("Start call from %s to %s" % (Extension, phoneNumber))
+    else:
+        logger.info("Cancel originate from %s to %s" % (Extension, phoneNumber))
+    client.logoff()
 
 class ClinicaWebAPI(object):
     @cherrypy.expose

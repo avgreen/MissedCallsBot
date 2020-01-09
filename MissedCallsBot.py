@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 import cherrypy
 import config
-#import sys
 import subprocess
 import logging
-#import argparse
-#from ClinicaWeb import ClinicaWebAPI as cwAPI
 import IncomingCalls
 #import users
 
@@ -66,8 +63,8 @@ class CallWithAwait(object):
             self.client.add_event_listener(self.event_Hangup, white_list=['Hangup'], Channel=self.re.compile('^SIP/%s.*'%Extension))
             while not self.complited:
                 self.sleep(0.1)
-                if (self.time() - self.startTime) > 600: # О чем можн трепаться больше 10 минут - не знаю! :) 
-                    self.logger.info("Timeout waiting hagup from %s to %s" % (self.Extension, self.phoneNumber))
+                if (self.time() - self.startTime) > 600: # О чем можно трепаться больше 10 минут - не знаю! :) 
+                    self.logger.info("Timeout waiting hangup from %s to %s" % (self.Extension, self.phoneNumber))
                     self.complited = True
                     break
         else:
@@ -77,7 +74,7 @@ class CallWithAwait(object):
     def event_Hangup(self, event, **kwargs):
         self.logger.debug(vars(event))
         if event['ConnectedLineNum'][-10:] == self.phoneNumber[-10:]:
-            self.logger.info("Hangup call from %s to '%s'" % (self.Extension, self.phoneNumber))
+            self.logger.info("Hangup call from %s to %s" % (self.Extension, self.phoneNumber))
             self.sleep(2.0) # подождем пока звонок запишется в базу статистики. Если 2 сек маловато - можно поставить больше. Нам принципе не к спеху - когда сообщение в телеграмме вернутся/удалится
             with self.closing(self.pymysql.connect(**{**config.CdrDB, 'charset': 'utf8mb4', 'cursorclass': self.DictCursor})) as connection:
                 with connection.cursor() as cursor:
