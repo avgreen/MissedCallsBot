@@ -55,20 +55,24 @@ class IncomingCalls(object):
                         strHistory += f"{direct} {row['calldate']} {row['calltime']} {self.disposMark[row['disposition']]} {row['abon']}\n"
         return strHistory
 
-    def delete_message(self, chat_id, message_id = 0,  extPhone = ''):
+    def delete_message(self, chat_id = 0, message_id = 0,  extPhone = '', intPhone = '', write_log = True):
+        delete_result = False
+        chat_id = config.Users.getChatID(intPhone) if chat_id == 0 else chat_id
         if message_id == 0:
             self.cursor.execute("SELECT * from calls WHERE chatID = ? and extPhone = ?", (chat_id, extPhone))
             for row in self.cursor.fetchall():
-                self.delete_message(chat_id, message_id = row['msgID'], extPhone = extPhone)
+                delete_result = self.delete_message(chat_id, message_id = row['msgID'], extPhone = extPhone, write_log = write_log)
         else:
             self.cursor.execute("DELETE FROM calls WHERE chatID = ? and msgID = ?", (chat_id, message_id))
             try:
                 self.bot.delete_message(chat_id=chat_id, message_id=message_id)
-                if extPhone:
+                delete_result = True
+                if extPhone and write_log:
                     self.logger.info("Delete message from %s by ChatID=%s and MsgID=%s" % (extPhone, chat_id, message_id))
             except:
                 self.logger.info("Can't delete message from %s by ChatID=%s and MsgID=%s" % (extPhone, chat_id, message_id))
             self.conn.commit()
+        return delete_result
 
     def send_message(self, intPhone, extPhone, extName, head_message = ''):
         vars = {
@@ -83,8 +87,8 @@ class IncomingCalls(object):
             callback_button = types.InlineKeyboardButton(text="Перезвонить", callback_data='CallTo'+extPhone)
             keyboard.add(callback_button)
         message = self.bot.send_message(chat_id=config.Users.getChatID(intPhone), text=config.messageTemplate.format(**vars), parse_mode='HTML', reply_markup = keyboard)
-        self.delete_message(message.chat.id, extPhone = extPhone)
+        delete_result = self.delete_message(message.chat.id, extPhone = extPhone, write_log = False)
         self.cursor.execute("INSERT INTO calls VALUES (?,?,?,?)", (self.time(), message.chat.id, extPhone, message.message_id))
         self.conn.commit()
-        self.logger.info("Add message from %s to ChatID=%s with MsgID=%s" % (extPhone, message.chat.id, message.message_id))
+        self.logger.info("%s message from %s to ChatID=%s with MsgID=%s" % ("Update" if delete_result else "Add", extPhone, message.chat.id, message.message_id))
         

@@ -16,6 +16,36 @@ except:
     print('You need to install pytelegrambotapi (pip install pytelegrambotapi) first!')
     exit()
 
+def sendMessage(args):
+    if args.intPhone and args.extPhone:
+        iCalls = IncomingCalls.IncomingCalls()
+        iCalls.send_message(args.intPhone, args.extPhone, args.extName, args.message if args.message else '')
+    #print(args)
+    
+def deleteMessage(args):
+    if args.intPhone and args.extPhone:
+        iCalls = IncomingCalls.IncomingCalls()
+        iCalls.delete_message(intPhone = args.intPhone, extPhone = args.extPhone)
+
+def parse_args():
+    """Настройка argparse"""
+    parser = argparse.ArgumentParser(description='Missed calls Telegram bot')
+    subparsers = parser.add_subparsers()
+
+    parser_append = subparsers.add_parser('sendMessage', help='Send message to chat')
+    parser_append.add_argument("-i", "--intPhone", help="internal phone number", required=True)
+    parser_append.add_argument("-e", "--extPhone", help="external phone number")
+    parser_append.add_argument("-n", "--extName", help="external phone name")
+    parser_append.add_argument("-m", "--message", help="head of message")
+    parser_append.set_defaults(func=sendMessage)
+
+    parser_append = subparsers.add_parser('deleteMessage', help='Delete message from chat')
+    parser_append.add_argument("-i", "--intPhone", help="internal phone number", required=True)
+    parser_append.add_argument("-e", "--extPhone", help="external phone number")
+    parser_append.set_defaults(func=deleteMessage)
+
+    return parser.parse_args()
+
 def main():
     config.Users = users.Users()
     logger = logging.getLogger("bot")
@@ -39,16 +69,12 @@ def main():
         shutil.chown(config.UsersDB, user=config.user, group=config.group)
 
     if len(sys.argv) > 1:
-        parser = argparse.ArgumentParser(add_help=True)
-        parser.add_argument("-i", "--intPhone", help="internal phone number")
-        parser.add_argument("-e", "--extPhone", help="external phone number")
-        parser.add_argument("-n", "--extName", help="external phone name")
-        parser.add_argument("-m", "--message", help="head of message")
-        args = parser.parse_args()
-        if args.intPhone and args.extPhone:
-            iCalls = IncomingCalls.IncomingCalls()
-            iCalls.send_message(args.intPhone, args.extPhone, args.extName, args.message if args.message else '')
-        #print(args)
+        args = parse_args()
+        try:
+            args.func(args)
+        except Exception as e:
+            print(e.message)
+        return
     else:
         bot = telebot.TeleBot(config.token)
         # Снимаем вебхук перед повторной установкой (избавляет от некоторых проблем)
