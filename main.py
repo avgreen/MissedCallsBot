@@ -19,13 +19,14 @@ except:
 def sendMessage(args):
     if args.intPhone and args.extPhone:
         iCalls = IncomingCalls.IncomingCalls()
-        iCalls.send_message(args.intPhone, args.extPhone, args.extName, args.message if args.message else '')
-    #print(args)
+        intPhone = args.intPhone[4::] if args.intPhone[:3:] == 'SIP' else args.intPhone
+        iCalls.send_message(intPhone, args.extPhone, args.extName, args.message if args.message else '')
     
 def deleteMessage(args):
     if args.intPhone and args.extPhone:
         iCalls = IncomingCalls.IncomingCalls()
-        iCalls.delete_message(intPhone = args.intPhone, extPhone = args.extPhone)
+        intPhone = args.intPhone[4::] if args.intPhone[:3:] == 'SIP' else args.intPhone
+        iCalls.delete_message(intPhone = intPhone, extPhone = args.extPhone)
 
 def parse_args():
     """Настройка argparse"""
