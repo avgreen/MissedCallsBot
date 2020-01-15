@@ -87,8 +87,9 @@ class IncomingCalls(object):
             callback_button = types.InlineKeyboardButton(text="Перезвонить", callback_data='CallTo'+extPhone)
             keyboard.add(callback_button)
         message = self.bot.send_message(chat_id=config.Users.getChatID(intPhone), text=config.messageTemplate.format(**vars), parse_mode='HTML', reply_markup = keyboard)
-        delete_result = self.delete_message(message.chat.id, extPhone = extPhone, write_log = False)
-        self.cursor.execute("INSERT INTO calls VALUES (?,?,?,?)", (self.time(), message.chat.id, extPhone, message.message_id))
-        self.conn.commit()
-        self.logger.info("%s message from %s to ChatID=%s with MsgID=%s" % ("Update" if delete_result else "Add", extPhone, message.chat.id, message.message_id))
+        if len(head_message) > 0:
+            delete_result = self.delete_message(message.chat.id, extPhone = extPhone, write_log = False)
+            self.cursor.execute("INSERT INTO calls VALUES (?,?,?,?)", (self.time(), message.chat.id, extPhone, message.message_id))
+            self.conn.commit()
+            self.logger.info("%s message from %s to ChatID=%s with MsgID=%s" % ("Update" if delete_result else "Add", extPhone, message.chat.id, message.message_id))
         
